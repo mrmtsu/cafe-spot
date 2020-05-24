@@ -8,8 +8,11 @@ Bundler.require(*Rails.groups)
 
 module App
   class Application < Rails::Application
-    # Settings in config/environments/* take precedence over those specified here.
-    # Application configuration should go into files in config/initializers
-    # -- all .rb files in that directory are automatically loaded.
+    config.load_defaults 5.2
+
+    config.generators do |g|
+      g.assets false
+      g.test_framework false
+    end
   end
 end
