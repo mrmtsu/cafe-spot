@@ -1,0 +1,15 @@
+<li id="post-<%= post.id %>">
+  <%= link_to gravatar_for(post.user, size: 50), post.user %>
+  <span class="name"><%= link_to post.name, post_path(post) %></span>
+  <span class="description"><%= post.description %></span><br>
+  <span class="place">場所：<%= post.place %></span>
+  <span class="popularity">おすすめ度：<%= post.popularity %></span><br>
+  <span class="reference"><%= link_to "HP", post.reference, target: :_blank %></span>
+  <span class="timestamp">
+    <%= time_ago_in_words(post.created_at) %>前に投稿
+  </span>
+  <% if current_user.admin? || (current_user == post.user) %>
+    <%= link_to "削除", post_path(post), method: :delete,
+                       data: { confirm: "本当に削除しますか？" } %>
+  <% end %>
+</li>

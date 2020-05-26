@@ -3,6 +3,7 @@ require 'rails_helper'
 RSpec.describe "Users", type: :system do
   let!(:user) { create(:user) }
   let!(:admin_user) { create(:user, :admin) }
+  let!(:other_user) { create(:user) }
 
   describe "ユーザー一覧ページ" do
     context "管理者ユーザーの場合" do
@@ -122,6 +123,7 @@ RSpec.describe "Users", type: :system do
     context "ページレイアウト" do
       before do
         login_for_system(user)
+        create_list(:post, 10, user: user)
         visit user_path(user)
       end
 
@@ -141,6 +143,24 @@ RSpec.describe "Users", type: :system do
 
       it "プロフィール編集ページへのリンクが表示されていることを確認" do
         expect(page).to have_link 'プロフィール編集', href: edit_user_path(user)
+      end
+
+      it "投稿の件数が表示されていることを確認" do
+        expect(page).to have_content "投稿 (#{user.posts.count})"
+      end
+
+      it "投稿の情報が表示されていることを確認" do
+        Post.take(5).each do |post|
+          expect(page).to have_link post.name
+          expect(page).to have_content post.description
+          expect(page).to have_content post.user.name
+          expect(page).to have_content post.place
+          expect(page).to have_content post.popularity
+        end
+      end
+
+      it "投稿のページネーションが表示されていることを確認" do
+        expect(page).to have_css "div.pagination"
       end
     end
   end
