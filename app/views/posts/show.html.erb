@@ -1,0 +1,23 @@
+<% provide(:title, "#{@post.name}") %>
+<div class="container">
+  <div class="row">
+    <h2 class="post-name"><%= @post.name %></h2>
+    <div class="change-post">
+      <% if current_user == @post.user %>
+        <%= link_to "編集", edit_post_path(@post), class: 'edit-post' %>　
+      <% end %>
+      <% if current_user.admin? || (current_user == @post.user) %>
+        <%= link_to "削除", post_path(@post), method: :delete, class: 'delete-post',
+                                      data: { confirm: "本当に削除しますか？" } %>
+      <% end %>
+    </div>
+    <h4><%= @post.description %></h4>
+    <h4 class="post-reference">URL：<%= link_to "#{@post.reference}", @post.reference, target: "_blank" %></h4>
+    <h4 class="post-place">場所：<%= @post.place %></h4>
+    <div class="show-post-other-info">
+      <div class="post-info">
+        <h5>おすすめ度：</h5><h4><%= @post.popularity %></h4>
+      </div>
+    </div>
+  </div>
+</div>

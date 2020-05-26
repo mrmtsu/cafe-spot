@@ -13,3 +13,12 @@ User.create!(name:  name,
     password:              password,
     password_confirmation: password)
 end
+
+10.times do |n|
+  Post.create!(name: "カフェ・ラテアート",
+               description: "ラテアートがすごい",
+               place: "東京都",
+               reference: "https://bluebottlecoffee.jp/",
+               popularity: 5,
+               user_id: 1)
+end

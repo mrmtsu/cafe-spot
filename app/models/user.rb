@@ -1,4 +1,5 @@
 class User < ApplicationRecord
+  has_many :posts, dependent: :destroy
   before_save :downcase_email
   attr_accessor :remember_token
   validates :name, presence: true, length: { maximum: 50 }
@@ -33,6 +34,10 @@ class User < ApplicationRecord
 
   def forget
     update_attribute(:remember_digest, nil)
+  end
+
+  def feed
+    Post.where("user_id = ?", id)
   end
 
   private
