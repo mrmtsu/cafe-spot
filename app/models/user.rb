@@ -10,6 +10,7 @@ class User < ApplicationRecord
   has_many :followers, through: :passive_relationships, source: :follower
   has_many :favorites, dependent: :destroy
   has_many :notifications, dependent: :destroy
+  has_many :lists, dependent: :destroy
   before_save :downcase_email
   attr_accessor :remember_token
   validates :name, presence: true, length: { maximum: 50 }
@@ -83,6 +84,18 @@ class User < ApplicationRecord
 
   def favorite?(post)
     !Favorite.find_by(user_id: id, post_id: post.id).nil?
+  end
+
+  def list(post)
+    List.create!(user_id: post.user_id, post_id: post.id, from_user_id: id)
+  end
+
+  def unlist(list)
+    list.destroy
+  end
+
+  def list?(post)
+    !List.find_by(post_id: post.id, from_user_id: id).nil?
   end
 
   private
