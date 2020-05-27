@@ -11,6 +11,9 @@
   <span class="place">場所：<%= post.place %></span>
   <span class="popularity">おすすめ度：<%= post.popularity %></span><br>
   <span class="reference"><%= link_to "HP", post.reference, target: :_blank %></span>
+  <% if current_user == post.user %>
+    <%= render "logs/new_form_mini" %>
+  <% end %>
   <span class="timestamp">
     <%= time_ago_in_words(post.created_at) %>前に投稿
   </span>

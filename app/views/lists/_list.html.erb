@@ -17,6 +17,7 @@
     <div class="col-md-7">
       <p><%= link_to @post.name, post_path(@post) %></p>
       <p class="list-post-description"><%= @post.description %></p>
+      <%= render "logs/new_form_mini" %>
     </div>
     <div class="col-md-3">
       <%= link_to "リストから削除", "/lists/#{list.id}/destroy",

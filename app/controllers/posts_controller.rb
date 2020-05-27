@@ -9,12 +9,14 @@ class PostsController < ApplicationController
   def show
     @post = Post.find(params[:id])
     @comment = Comment.new
+    @log = Log.new
   end
 
   def create
     @post = current_user.posts.build(post_params)
     if @post.save
       flash[:success] = "投稿が登録されました！"
+      Log.create(post_id: @post.id, content: @post.cafememo)
       redirect_to post_path(@post)
     else
       render 'posts/new'
@@ -50,7 +52,7 @@ class PostsController < ApplicationController
   private
 
     def post_params
-      params.require(:post).permit(:name, :description, :place, :reference, :popularity, :picture)
+      params.require(:post).permit(:name, :description, :place, :reference, :popularity, :picture, :cafememo)
     end
 
     def correct_user
