@@ -1,0 +1,14 @@
+<% @post = Post.find(favorite.post_id) %>
+<% user = @post.user %>
+<li id="favorite-<%= favorite.id %>">
+  <div class="row favorite-post">
+    <div class="col-md-2">
+      <%= link_to((image_tag @post.picture.url), post_path(@post), class: 'post-picture') %>
+    </div>
+    <div class="col-md-7">
+      <p><%= link_to @post.name, post_path(@post) %></p>
+      <p><%= @post.description %></p>
+      <p class="post-user">posted by <%= link_to user.name, user_path(user) %></p>
+    </div>
+  </div>
+</li>

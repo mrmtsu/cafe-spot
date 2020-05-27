@@ -1,9 +1,11 @@
 <li id="post-<%= post.id %>">
+<% @post = post %>
   <%= link_to gravatar_for(post.user, size: 50), post.user %>
   <span class="name"><%= link_to post.name, post_path(post) %></span>
   <span>
     <%= link_to((image_tag post.picture.thumb200.url), post_path(post.id), class: 'post-picture') if post.picture.url.present? %>
   </span>
+  <%= render 'users/favorite_form' %>
   <span class="description"><%= post.description %></span><br>
   <span class="place">場所：<%= post.place %></span>
   <span class="popularity">おすすめ度：<%= post.popularity %></span><br>

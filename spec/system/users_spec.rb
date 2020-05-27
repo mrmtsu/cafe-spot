@@ -4,6 +4,8 @@ RSpec.describe "Users", type: :system do
   let!(:user) { create(:user) }
   let!(:admin_user) { create(:user, :admin) }
   let!(:other_user) { create(:user) }
+  let!(:posts) { create(:post, user: user) }
+  let!(:other_posts) { create(:post, user: other_user) }
 
   describe "ユーザー一覧ページ" do
     context "管理者ユーザーの場合" do
@@ -153,7 +155,7 @@ RSpec.describe "Users", type: :system do
         Post.take(5).each do |post|
           expect(page).to have_link post.name
           expect(page).to have_content post.description
-          expect(page).to have_content post.user.name
+          expect(page).to have_content posts.user.name
           expect(page).to have_content post.place
           expect(page).to have_content post.popularity
         end
@@ -173,6 +175,77 @@ RSpec.describe "Users", type: :system do
         expect(page).to have_button 'フォロー中'
         click_button 'フォロー中'
         expect(page).to have_button 'フォローする'
+      end
+    end
+
+    context "お気に入り登録/解除" do
+      before do
+        login_for_system(user)
+      end
+
+      it "投稿のお気に入り登録/解除ができること" do
+        expect(user.favorite?(posts)).to be_falsey
+        user.favorite(posts)
+        expect(user.favorite?(posts)).to be_truthy
+        user.unfavorite(posts)
+        expect(user.favorite?(posts)).to be_falsey
+      end
+
+      it "トップページからお気に入り登録/解除ができること", js: true do
+        visit root_path
+        link = find('.like')
+        expect(link[:href]).to include "/favorites/#{posts.id}/create"
+        link.click
+        link = find('.unlike')
+        expect(link[:href]).to include "/favorites/#{posts.id}/destroy"
+        link.click
+        link = find('.like')
+        expect(link[:href]).to include "/favorites/#{posts.id}/create"
+      end
+
+      it "ユーザー個別ページからお気に入り登録/解除ができること", js: true do
+        visit user_path(user)
+        link = find('.like')
+        expect(link[:href]).to include "/favorites/#{posts.id}/create"
+        link.click
+        link = find('.unlike')
+        expect(link[:href]).to include "/favorites/#{posts.id}/destroy"
+        link.click
+        link = find('.like')
+        expect(link[:href]).to include "/favorites/#{posts.id}/create"
+      end
+
+      it "投稿個別ページからお気に入り登録/解除ができること", js: true do
+        visit posts_path(posts)
+        link = find('.like')
+        expect(link[:href]).to include "/favorites/#{posts.id}/create"
+        link.click
+        link = find('.unlike')
+        expect(link[:href]).to include "/favorites/#{posts.id}/destroy"
+        link.click
+        link = find('.like')
+        expect(link[:href]).to include "/favorites/#{posts.id}/create"
+      end
+
+      it "お気に入り一覧ページが期待通り表示されること" do
+        visit favorites_path
+        expect(page).not_to have_css ".favorite-posts"
+        user.favorite(posts)
+        user.favorite(other_posts)
+        visit favorites_path
+        expect(page).to have_css ".favorite-post", count: 2
+        expect(page).to have_content posts.name
+        expect(page).to have_content posts.description
+        expect(page).to have_content "posted by #{user.name}"
+        expect(page).to have_link user.name, href: user_path(user)
+        expect(page).to have_content other_posts.name
+        expect(page).to have_content other_posts.description
+        expect(page).to have_content "posted by #{other_user.name}"
+        expect(page).to have_link other_user.name, href: user_path(other_user)
+        user.unfavorite(other_posts)
+        visit favorites_path
+        expect(page).to have_css ".favorite-post", count: 1
+        expect(page).to have_content posts.name
       end
     end
   end
