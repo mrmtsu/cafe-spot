@@ -2,17 +2,15 @@ require "rails_helper"
 
 RSpec.describe "投稿登録", type: :request do
   let!(:user) { create(:user) }
+  let!(:other_user) { create(:user) }
   let!(:posts) { create(:post, user: user) }
+  let(:picture_path) { File.join(Rails.root, 'spec/fixtures/test_post.jpg') }
+  let(:picture) { Rack::Test::UploadedFile.new(picture_path) }
 
   context "ログインしているユーザーの場合" do
     before do
       get new_post_path
       login_for_request(user)
-    end
-
-    it "レスポンスが正常に表示されること" do
-      expect(response).to have_http_status "200"
-      expect(response).to render_template('posts/new')
     end
 
     context "フレンドリーフォワーディング" do
@@ -27,7 +25,8 @@ RSpec.describe "投稿登録", type: :request do
                                            description: "ラテアートがすごい",
                                            place: "東京",
                                            reference: "https://bluebottlecoffee.jp/",
-                                           popularity: 5 } }
+                                           popularity: 5,
+                                           picture: picture } }
         }.to change(Post, :count).by(1)
         follow_redirect!
         expect(response).to render_template('posts/show')
@@ -39,7 +38,8 @@ RSpec.describe "投稿登録", type: :request do
                                            description: "ラテアートがすごい",
                                            place: "東京",
                                            reference: "https://bluebottlecoffee.jp/",
-                                           popularity: 5 } }
+                                           popularity: 5,
+                                           picture: picture } }
       }.not_to change(Post, :count)
       expect(response).to render_template('posts/new')
     end

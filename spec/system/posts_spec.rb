@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe "Posts", type: :system do
   let!(:user) { create(:user) }
-  let!(:posts) { create(:post, user: user) }
+  let!(:posts) { create(:post, :picture, user: user) }
 
   describe "投稿登録ページ" do
     before do
@@ -35,8 +35,15 @@ RSpec.describe "Posts", type: :system do
         fill_in "場所", with: "東京"
         fill_in "URL", with: "https://bluebottlecoffee.jp/"
         fill_in "おすすめ度", with: 5
+        attach_file "post[picture]", "#{Rails.root}/spec/fixtures/test_post.jpg"
         click_button "登録する"
         expect(page).to have_content "投稿が登録されました！"
+      end
+
+      it "画像無しで登録すると、デフォルト画像が割り当てられること" do
+        fill_in "店名", with: "カフェ・ラテアート"
+        click_button "登録する"
+        expect(page).to have_link(href: post_path(Post.first))
       end
 
       it "無効な情報で投稿登録を行うと投稿登録失敗のフラッシュが表示されること" do
@@ -68,6 +75,7 @@ RSpec.describe "Posts", type: :system do
         expect(page).to have_content posts.place
         expect(page).to have_content posts.reference
         expect(page).to have_content posts.popularity
+        expect(page).to have_link nil, href: post_path(posts), class: 'post-picture'
       end
 
       context "投稿の削除", js: true do
@@ -112,6 +120,7 @@ RSpec.describe "Posts", type: :system do
         fill_in "場所", with: "編集:東京"
         fill_in "URL", with: "https://bluebottlecoffee.jp/"
         fill_in "おすすめ度", with: 5
+        attach_file "post[picture]", "#{Rails.root}/spec/fixtures/test_post2.jpg"
         click_button "更新する"
         expect(page).to have_content "投稿情報が更新されました！"
         expect(posts.reload.name).to eq "編集:カフェ・ラテアート"
@@ -119,6 +128,7 @@ RSpec.describe "Posts", type: :system do
         expect(posts.reload.place).to eq "編集:東京"
         expect(posts.reload.reference).to eq "https://bluebottlecoffee.jp/"
         expect(posts.reload.popularity).to eq 5
+        expect(posts.reload.picture.url).to include "test_post2.jpg"
       end
 
       it "無効な更新" do

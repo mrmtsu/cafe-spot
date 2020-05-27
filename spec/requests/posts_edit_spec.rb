@@ -4,6 +4,8 @@ RSpec.describe "投稿編集", type: :request do
   let!(:user) { create(:user) }
   let!(:other_user) { create(:user) }
   let!(:posts) { create(:post, user: user) }
+  let(:picture2_path) { File.join(Rails.root, 'spec/fixtures/test_post2.jpg') }
+  let(:picture2) { Rack::Test::UploadedFile.new(picture2_path) }
 
   context "認可されたユーザーの場合" do
     it "レスポンスが正常に表示されること(+フレンドリーフォワーディング)" do
@@ -14,7 +16,8 @@ RSpec.describe "投稿編集", type: :request do
                                                description: "ラテアートがすごい",
                                                place: "東京",
                                                reference: "https://bluebottlecoffee.jp/",
-                                               popularity: 5 } }
+                                               popularity: 5,
+                                               picture: picture2 } }
       redirect_to posts
       follow_redirect!
       expect(response).to render_template('posts/show')
