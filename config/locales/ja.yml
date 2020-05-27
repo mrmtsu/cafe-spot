@@ -23,6 +23,7 @@ ja:
       post:
         id: ID
         name: 店名
+        picture: 投稿の写真
         description: 説明
         place: 場所
         reference: URL
