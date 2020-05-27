@@ -21,4 +21,5 @@ Rails.application.routes.draw do
   get :lists, to: 'lists#index'
   post   "lists/:post_id/create"  => "lists#create"
   delete "lists/:list_id/destroy" => "lists#destroy"
+  resources :logs, only: [:create, :destroy]
 end

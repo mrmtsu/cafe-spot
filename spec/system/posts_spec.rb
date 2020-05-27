@@ -5,6 +5,7 @@ RSpec.describe "Posts", type: :system do
   let!(:other_user) { create(:user) }
   let!(:posts) { create(:post, :picture, user: user) }
   let!(:comment) { create(:comment, user_id: user.id, post: posts) }
+  let!(:log) { create(:log, post: posts) }
 
   describe "投稿登録ページ" do
     before do
@@ -42,12 +43,6 @@ RSpec.describe "Posts", type: :system do
         expect(page).to have_content "投稿が登録されました！"
       end
 
-      it "画像無しで登録すると、デフォルト画像が割り当てられること" do
-        fill_in "店名", with: "カフェ・ラテアート"
-        click_button "登録する"
-        expect(page).to have_link(href: post_path(Post.first))
-      end
-
       it "無効な情報で投稿登録を行うと投稿登録失敗のフラッシュが表示されること" do
         fill_in "店名", with: ""
         fill_in "説明", with: "ラテアートがすごい"
@@ -80,18 +75,6 @@ RSpec.describe "Posts", type: :system do
         expect(page).to have_link nil, href: post_path(posts), class: 'post-picture'
       end
 
-      context "投稿の削除", js: true do
-        it "削除成功のフラッシュが表示されること" do
-          login_for_system(user)
-          visit post_path(posts)
-          within find('.change-post') do
-            click_on '削除'
-          end
-          page.driver.browser.switch_to.alert.accept
-          expect(page).to have_content '投稿が削除されました'
-        end
-      end
-
       context "コメントの登録＆削除" do
         it "自分の投稿に対するコメントの登録＆削除が正常に完了すること" do
           login_for_system(user)
@@ -116,6 +99,78 @@ RSpec.describe "Posts", type: :system do
             expect(page).to have_selector 'span', text: comment.content
             expect(page).not_to have_link '削除', href: post_path(posts)
           end
+        end
+      end
+    end
+
+    context "ログ登録＆削除" do
+      context "投稿詳細ページから" do
+        it "自分の投稿に対するログ登録＆削除が正常に完了すること" do
+          login_for_system(user)
+          visit post_path(posts)
+          fill_in "log_content", with: "朝が狙い目"
+          click_button "ログ追加"
+          within find("#log-#{Log.first.id}") do
+            expect(page).to have_selector 'span', text: "#{posts.logs.count}回目"
+            expect(page).to have_selector 'span',
+                                          text: %Q(#{Log.last.created_at.strftime("%Y/%m/%d(%a)")})
+            expect(page).to have_selector 'span', text: '朝が狙い目'
+          end
+          expect(page).to have_content "カフェログを追加しました！"
+          click_link "削除", href: log_path(Log.first)
+          expect(page).to have_content "カフェログを削除しました"
+        end
+
+        it "別ユーザーの投稿ログにはログ登録フォームが無いこと" do
+          login_for_system(other_user)
+          visit post_path(posts)
+          expect(page).not_to have_button "作る"
+        end
+      end
+
+      context "トップページから" do
+        it "自分の投稿に対するログ登録が正常に完了すること" do
+          login_for_system(user)
+          visit root_path
+          fill_in "log_content", with: "朝が狙い目"
+          click_button "追加"
+          expect(Log.first.content).to eq '朝が狙い目'
+          expect(page).to have_content "カフェログを追加しました！"
+        end
+
+        it "別ユーザーの投稿にはログ登録フォームがないこと" do
+          create(:post, user: other_user)
+          login_for_system(user)
+          user.follow(other_user)
+          visit root_path
+          within find("#post-#{Post.first.id}") do
+            expect(page).not_to have_button "作る"
+          end
+        end
+      end
+
+      context "プロフィールページから" do
+        it "自分の投稿に対するログ登録が正常に完了すること" do
+          login_for_system(user)
+          visit user_path(user)
+          fill_in "log_content", with: "朝が狙い目"
+          click_button "追加"
+          expect(Log.first.content).to eq '朝が狙い目'
+          expect(page).to have_content "カフェログを追加しました！"
+        end
+      end
+
+      context "リスト一覧ページから" do
+        it "自分の投稿に対するログ登録が正常に完了し、リストから投稿が削除されること" do
+          login_for_system(user)
+          user.list(posts)
+          visit lists_path
+          expect(page).to have_content posts.name
+          fill_in "log_content", with: "朝が狙い目"
+          click_button "追加"
+          expect(Log.first.content).to eq '朝が狙い目'
+          expect(page).to have_content "カフェログを追加しました！"
+          expect(List.count).to eq 0
         end
       end
     end
@@ -165,14 +220,6 @@ RSpec.describe "Posts", type: :system do
         click_button "更新する"
         expect(page).to have_content '店名を入力してください'
         expect(posts.reload.name).not_to eq ""
-      end
-    end
-
-    context "投稿の削除処理", js: true do
-      it "削除成功のフラッシュが表示されること" do
-        click_on '削除'
-        page.driver.browser.switch_to.alert.accept
-        expect(page).to have_content '投稿が削除されました'
       end
     end
   end

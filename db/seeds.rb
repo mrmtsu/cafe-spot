@@ -20,7 +20,11 @@ end
                place: "東京都",
                reference: "https://bluebottlecoffee.jp/",
                popularity: 5,
+               cafememo: "朝が狙い目！",
                user_id: 1)
+  post = Post.first
+  Log.create!(post_id: post.id,
+              content: post.cafememo)
 end
 
 users = User.all
