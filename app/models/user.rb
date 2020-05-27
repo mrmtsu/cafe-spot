@@ -8,6 +8,7 @@ class User < ApplicationRecord
                                    foreign_key: "followed_id",
                                    dependent: :destroy
   has_many :followers, through: :passive_relationships, source: :follower
+  has_many :favorites, dependent: :destroy
   before_save :downcase_email
   attr_accessor :remember_token
   validates :name, presence: true, length: { maximum: 50 }
@@ -69,6 +70,18 @@ class User < ApplicationRecord
                      WHERE follower_id = :user_id"
     Post.where("user_id IN (#{following_ids})
                      OR user_id = :user_id", user_id: id)
+  end
+
+  def favorite(post)
+    Favorite.create!(user_id: id, post_id: post.id)
+  end
+
+  def unfavorite(post)
+    Favorite.find_by(user_id: id, post_id: post.id).destroy
+  end
+
+  def favorite?(post)
+    !Favorite.find_by(user_id: id, post_id: post.id).nil?
   end
 
   private
