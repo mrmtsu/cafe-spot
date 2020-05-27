@@ -163,5 +163,17 @@ RSpec.describe "Users", type: :system do
         expect(page).to have_css "div.pagination"
       end
     end
+
+    context "ユーザーのフォロー/アンフォロー処理", js: true do
+      it "ユーザーのフォロー/アンフォローができること" do
+        login_for_system(user)
+        visit user_path(other_user)
+        expect(page).to have_button 'フォローする'
+        click_button 'フォローする'
+        expect(page).to have_button 'フォロー中'
+        click_button 'フォロー中'
+        expect(page).to have_button 'フォローする'
+      end
+    end
   end
 end
