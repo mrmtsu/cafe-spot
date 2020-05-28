@@ -17,7 +17,10 @@ RSpec.describe "投稿編集", type: :request do
                                                place: "東京",
                                                reference: "https://bluebottlecoffee.jp/",
                                                popularity: 5,
-                                               picture: picture2 } }
+                                               picture: picture2,
+                                               menus_attributes: [
+                                                name: "ラテアート",
+                                                price: "200円"] } }
       redirect_to posts
       follow_redirect!
       expect(response).to render_template('posts/show')

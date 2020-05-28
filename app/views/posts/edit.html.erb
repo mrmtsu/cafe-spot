@@ -24,6 +24,28 @@
             <%= f.label :place %> [場所]　<span class="input-unneed">※任意</span>
             <%= f.text_field :place, class: 'form-control', id: 'post_place' %>
           </div>
+          <div class="row">
+            <div class="col-md-9">
+              <p class="title-menu-name">メニュー名（10種類まで登録可）　<span class="input-unneed">※任意</span></p>
+            </div>
+            <div class="col-md-3">
+              <p class="title-menu-price">金額　<span class="input-unneed">※任意</span></p>
+            </div>
+          </div>
+          <%= f.fields_for :menus do |i| %>
+            <div class="row">
+              <div class="col-md-9">
+                <div class = 'form-group'>
+                  <%= i.text_field :name, class: 'form-control menu_name' %>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class = 'form-group'>
+                  <%= i.text_field :price, class: 'form-control menu_price' %>
+                </div>
+              </div>
+            </div>
+          <% end %>
           <div class = 'form-group'>
             <%= f.label :reference %>　<span class="input-unneed">※任意</span>
             <%= f.text_field :reference, class: 'form-control', id: 'post_reference' %>
