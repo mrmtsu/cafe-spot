@@ -2,8 +2,13 @@ class PostsController < ApplicationController
   before_action :logged_in_user
   before_action :correct_user, only: [:edit, :update]
 
+  def index
+    @log = Log.new
+  end
+
   def new
     @post = Post.new
+    @post.menus.build
   end
 
   def show
@@ -52,7 +57,8 @@ class PostsController < ApplicationController
   private
 
     def post_params
-      params.require(:post).permit(:name, :description, :place, :reference, :popularity, :picture, :cafememo)
+      params.require(:post).permit(:name, :description, :place, :reference, :popularity, :picture,
+                                   :cafememo, menus_attributes: [:id, :name, :price])
     end
 
     def correct_user

@@ -457,3 +457,47 @@ a.list, a.unlist {
   background-color: palegreen;
   border-color: palegreen;
 }
+
+//// メニュー ////
+.title-menu-name, .title-menu-price {
+  font-weight: bold;
+}
+
+.menus {
+  margin-top: 30px;
+  margin-bottom: 30px;
+  h5 {
+    font-size: 17px;
+  }
+}
+
+.title-menus {
+  font-size: 17px;
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+table.menu {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+table.menu th, table.menu td {
+  padding: 10px 0;
+  text-align: center;
+}
+
+table.menu tr:nth-child(odd) {
+  background-color: #eee
+}
+
+.post-menu {
+  margin: 15px 0;
+}
+
+.title-menu-mini {
+  font-weight: bold;
+  margin-bottom: 5px;
+}

@@ -4,6 +4,8 @@ class Post < ApplicationRecord
   has_many :comments, dependent: :destroy
   has_many :lists, dependent: :destroy
   has_many :logs, dependent: :destroy
+  has_many :menus, dependent: :destroy
+  accepts_nested_attributes_for :menus
   default_scope -> { order(created_at: :desc) }
   mount_uploader :picture, PictureUploader
   validates :user_id, presence: true

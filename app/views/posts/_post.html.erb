@@ -12,6 +12,14 @@
       <h3 class="post-name"><%= link_to post.name, post_path(post) %></h3>
       <div class="post-description"><%= post.description %></div>
       <div class="post-user">posted by <%= link_to post.user.name, user_path(post.user) %></div>
+      <div class="post-menu">
+        <p class="title-menu-mini">【メニュー名】</p>
+        <% post.menus.each_with_index do |ing, i| %>
+          <% if ing.name.present? %>
+            <%= "｜" unless i == 0 %><%= ing.name %>: <%= ing.price %>
+          <% end %>
+        <% end %>
+      </div>
       <div class="post-other-info">
         <span class="place">場所：<%= post.place %></span>
         <span class="popularity">おすすめ度：

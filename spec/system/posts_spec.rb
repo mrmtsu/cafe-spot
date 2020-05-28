@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe "Posts", type: :system do
   let!(:user) { create(:user) }
   let!(:other_user) { create(:user) }
-  let!(:posts) { create(:post, :picture, user: user) }
+  let!(:posts) { create(:post, :picture, :menus,  user: user) }
   let!(:comment) { create(:comment, user_id: user.id, post: posts) }
   let!(:log) { create(:log, post: posts) }
 
@@ -26,8 +26,17 @@ RSpec.describe "Posts", type: :system do
         expect(page).to have_content '店名'
         expect(page).to have_content '説明'
         expect(page).to have_content '場所'
+        expect(page).to have_css 'label[for=post_menus_attributes_0_name]',
+                               text: 'メニュー名（10種類まで登録可）', count: 1
+        expect(page).to have_css 'label[for=post_menus_attributes_0_price]',
+                               text: '金額', count: 1
         expect(page).to have_content 'URL'
         expect(page).to have_content 'おすすめ度 [1~5]'
+      end
+
+      it "メニュー入力部分が10行表示されること" do
+        expect(page).to have_css 'input.menu_name', count: 10
+        expect(page).to have_css 'input.menu_price', count: 10
       end
     end
 
@@ -36,6 +45,8 @@ RSpec.describe "Posts", type: :system do
         fill_in "店名", with: "カフェ・ラテアート"
         fill_in "説明", with: "ラテアートがすごい"
         fill_in "場所", with: "東京"
+        fill_in "post[menus_attributes][0][name]", with: "豆"
+        fill_in "post[menus_attributes][0][price]", with: "200円"
         fill_in "URL", with: "https://bluebottlecoffee.jp/"
         fill_in "おすすめ度", with: 5
         attach_file "post[picture]", "#{Rails.root}/spec/fixtures/test_post.jpg"
@@ -73,6 +84,10 @@ RSpec.describe "Posts", type: :system do
         expect(page).to have_content posts.reference
         expect(page).to have_content posts.popularity
         expect(page).to have_link nil, href: post_path(posts), class: 'post-picture'
+        posts.menus.each do |i|
+          expect(page).to have_content i.name
+          expect(page).to have_content i.price
+        end
       end
 
       context "コメントの登録＆削除" do
@@ -173,6 +188,91 @@ RSpec.describe "Posts", type: :system do
           expect(List.count).to eq 0
         end
       end
+
+      context "検索機能" do
+        context "ログインしている場合" do
+          before do
+            login_for_system(user)
+            visit root_path
+          end
+    
+          it "ログイン後の各ページに検索窓が表示されていること" do
+            expect(page).to have_css 'form#post_search'
+            visit about_path
+            expect(page).to have_css 'form#post_search'
+            visit use_of_terms_path
+            expect(page).to have_css 'form#post_search'
+            visit users_path
+            expect(page).to have_css 'form#post_search'
+            visit user_path(user)
+            expect(page).to have_css 'form#post_search'
+            visit edit_user_path(user)
+            expect(page).to have_css 'form#post_search'
+            visit following_user_path(user)
+            expect(page).to have_css 'form#post_search'
+            visit followers_user_path(user)
+            expect(page).to have_css 'form#post_search'
+            visit posts_path
+            expect(page).to have_css 'form#post_search'
+            visit post_path(posts)
+            expect(page).to have_css 'form#post_search'
+            visit new_post_path
+            expect(page).to have_css 'form#post_search'
+            visit edit_post_path(posts)
+            expect(page).to have_css 'form#post_search'
+          end
+    
+          it "フィードの中から検索ワードに該当する結果が表示されること" do
+            create(:post, name: 'かに玉', user: user)
+            create(:post, name: 'かに鍋', user: other_user)
+            create(:post, name: '野菜炒め', user: user)
+            create(:post, name: '野菜カレー', user: other_user)
+
+            fill_in 'q_name_or_menus_name_cont', with: 'かに'
+            click_button '検索'
+            expect(page).to have_css 'h3', text: "”かに”の検索結果：1件"
+            within find('.posts') do
+              expect(page).to have_css 'li', count: 1
+            end
+            fill_in 'q_name_or_menus_name_cont', with: '野菜'
+            click_button '検索'
+            expect(page).to have_css 'h3', text: "”野菜”の検索結果：1件"
+            within find('.posts') do
+              expect(page).to have_css 'li', count: 1
+            end
+
+            user.follow(other_user)
+            fill_in 'q_name_or_menus_name_cont', with: 'かに'
+            click_button '検索'
+            expect(page).to have_css 'h3', text: "”かに”の検索結果：2件"
+            within find('.posts') do
+              expect(page).to have_css 'li', count: 2
+            end
+            fill_in 'q_name_or_menus_name_cont', with: '野菜'
+            click_button '検索'
+            expect(page).to have_css 'h3', text: "”野菜”の検索結果：2件"
+            within find('.posts') do
+              expect(page).to have_css 'li', count: 2
+            end
+          end
+    
+          it "検索ワードを入れずに検索ボタンを押した場合、投稿一覧が表示されること" do
+            fill_in 'q_name_or_menus_name_cont', with: ''
+            click_button '検索'
+            expect(page).to have_css 'h3', text: "投稿一覧"
+            within find('.posts') do
+              expect(page).to have_css 'li', count: Post.count
+            end
+          end
+        end
+    
+        context "ログインしていない場合" do
+          it "検索窓が表示されないこと" do
+            visit root_path
+            expect(page).not_to have_css 'form#post_search'
+          end
+        end
+      end
     end
   end
 
@@ -192,8 +292,15 @@ RSpec.describe "Posts", type: :system do
         expect(page).to have_content '店名'
         expect(page).to have_content '説明'
         expect(page).to have_content '場所'
+        expect(page).to have_css 'p.title-menu-name', text: 'メニュー名（10種類まで登録可）', count: 1
+        expect(page).to have_css 'p.title-menu-price', text: '金額', count: 1
         expect(page).to have_content 'URL'
         expect(page).to have_content 'おすすめ度 [1~5]'
+      end
+
+      it "メニュー入力部分が10行表示されること" do
+        expect(page).to have_css 'input.menu_name', count: 10
+        expect(page).to have_css 'input.menu_price', count: 10
       end
     end
 
@@ -202,6 +309,8 @@ RSpec.describe "Posts", type: :system do
         fill_in "店名", with: "編集:カフェ・ラテアート"
         fill_in "説明", with: "ラテアートがすごい"
         fill_in "場所", with: "編集:東京"
+        fill_in "post[menus_attributes][0][name]", with: "編集-アイスコーヒー"
+        fill_in "post[menus_attributes][0][price]", with: "編集-1円"
         fill_in "URL", with: "https://bluebottlecoffee.jp/"
         fill_in "おすすめ度", with: 5
         attach_file "post[picture]", "#{Rails.root}/spec/fixtures/test_post2.jpg"
@@ -210,6 +319,8 @@ RSpec.describe "Posts", type: :system do
         expect(posts.reload.name).to eq "編集:カフェ・ラテアート"
         expect(posts.reload.description).to eq "ラテアートがすごい"
         expect(posts.reload.place).to eq "編集:東京"
+        expect(posts.reload.menus.first.name).to eq "編集-アイスコーヒー"
+        expect(posts.reload.menus.first.price).to eq "編集-1円"
         expect(posts.reload.reference).to eq "https://bluebottlecoffee.jp/"
         expect(posts.reload.popularity).to eq 5
         expect(posts.reload.picture.url).to include "test_post2.jpg"

@@ -26,10 +26,23 @@ RSpec.describe "投稿登録", type: :request do
                                            place: "東京",
                                            reference: "https://bluebottlecoffee.jp/",
                                            popularity: 5,
-                                           picture: picture } }
+                                           picture: picture,
+                                           menus_attributes: [
+                                            name: "ラテアート",
+                                            price: "200円"] } }
         }.to change(Post, :count).by(1)
+        redirect_to Post.first
         follow_redirect!
         expect(response).to render_template('posts/show')
+    end
+
+    it "メニューのデータも同時に増えること" do
+      expect {
+        post posts_path, params: { post: { name: "カフェ・ラテアート",
+                                            menus_attributes: [
+                                              name: "カフェラテ",
+                                              price: "200円"] } }
+      }.to change(Menu, :count).by(1)
     end
 
     it "無効な投稿データでは登録できないこと" do
@@ -39,9 +52,20 @@ RSpec.describe "投稿登録", type: :request do
                                            place: "東京",
                                            reference: "https://bluebottlecoffee.jp/",
                                            popularity: 5,
-                                           picture: picture } }
+                                           picture: picture,
+                                           menus_attributes: [
+                                            name: "ラテアート",
+                                            price: "200円"] } }
       }.not_to change(Post, :count)
       expect(response).to render_template('posts/new')
+    end
+  end
+
+  context "メニュー無しの投稿登録" do
+    it "メニューのデータは増えないこと" do
+      expect {
+        post posts_path, params: { post: { name: "カフェ・ラテアート" } }
+      }.not_to change(Menu, :count)
     end
   end
 

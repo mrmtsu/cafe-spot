@@ -24,6 +24,23 @@
         </div>
         <h4><%= @post.description %></h4>
         <h4 class="post-reference">URL：<%= link_to "#{@post.reference}", @post.reference, target: "_blank" %></h4>
+          <div class="menus">
+            <h5 class="title-menus">メニュー名</h5>
+            <div class="row">
+              <div class="col-md-8">
+                <table class="menu">
+                  <% @post.menus.each do |i| %>
+                    <% if i.name.present? %>
+                      <tr>
+                        <td><%= i.name %></td>
+                        <td><%= i.price %></td>
+                      </tr>
+                    <% end %>
+                  <% end %>
+                </table>
+              </div>
+            </div>
+          </div>
         <h4 class="post-place">場所：<%= @post.place %></h4>
         <div class="show-post-other-info">
           <div class="post-info">

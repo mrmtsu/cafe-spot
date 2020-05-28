@@ -150,6 +150,10 @@ RSpec.describe "Users", type: :system do
           expect(page).to have_content posts.user.name
           expect(page).to have_content post.place
           expect(page).to have_content "★" * post.popularity + "☆" * (5 - post.popularity)
+          posts.menus.each do |i|
+            expect(page).to have_content i.name
+            expect(page).to have_content i.price
+          end
         end
       end
 
