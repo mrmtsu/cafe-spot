@@ -149,7 +149,7 @@ RSpec.describe "Users", type: :system do
           expect(page).to have_content post.description
           expect(page).to have_content posts.user.name
           expect(page).to have_content post.place
-          expect(page).to have_content post.popularity
+          expect(page).to have_content "★" * post.popularity + "☆" * (5 - post.popularity)
         end
       end
 

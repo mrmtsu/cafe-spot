@@ -17,7 +17,8 @@
 .byebug_history
 
 # Ignore gems
-/vendor
+/vendor/bundle
+/vendor/.keep
 
 # Ignore unnecessary pictures
 /public/uploads/*
