@@ -1,7 +1,7 @@
 <%= form_for(@log) do |f| %>
   <%= hidden_field_tag :post_id, @post.id %>
   <%= hidden_field_tag :list_id, @list.id if @list.present? %>
-  <p class="add-cafelog"><i class="fas fa-utensils"></i> カフェログを追加する</p>
+  <p class="add-cafelog"><i class="fas fa-coffee"></i> カフェログを追加する</p>
   <div class="row">
     <div class="col-md-9">
       <div class="field">
